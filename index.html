@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrimeMath — Pressure Washing Quote Calculator</title>
+<style>
+:root{--bg:#0d1b22;--panel:#142830;--panel2:#1a3441;--ink:#eaf4f7;--muted:#9db8c2;--acc:#2fb9d8;--acc2:#57d977;--warn:#ffb02e;--bad:#ff5d5d;--line:#274a58;--radius:12px}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45}
+header{background:linear-gradient(135deg,#0e2a38,#123a4d);padding:16px;border-bottom:2px solid var(--acc)}
+header h1{margin:0;font-size:22px}
+header .sub{color:var(--muted);font-size:13px;margin-top:2px}
+header .co{font-size:13px;color:var(--acc);margin-top:4px;font-weight:600}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--panel);position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+nav button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer;min-height:40px}
+nav button.active{background:var(--acc);color:#06222e;border-color:var(--acc);font-weight:700}
+main{max-width:980px;margin:0 auto;padding:14px 12px 60px}
+section.view{display:none}
+section.view.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:17px}
+.card h3{margin:14px 0 8px;font-size:15px;color:var(--acc)}
+label{display:block;font-size:12.5px;color:var(--muted);margin:8px 0 3px}
+input,select,textarea{width:100%;background:#0a171e;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:15px;min-height:42px}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.grid,.grid3{grid-template-columns:1fr}}
+.btn{background:var(--acc);color:#06222e;border:none;border-radius:8px;padding:11px 16px;font-size:15px;font-weight:700;cursor:pointer;min-height:44px}
+.btn.secondary{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-weight:600}
+.btn.green{background:var(--acc2);color:#06280f}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad);font-weight:600}
+.btn.small{padding:7px 10px;font-size:13px;min-height:36px;min-height:40px;}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.tblwrap{overflow-x:auto}
+.big{font-size:24px;font-weight:800}
+.good{color:var(--acc2)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.floorbox{border:2px solid var(--bad);background:#3a1720;border-radius:var(--radius);padding:12px;margin-top:12px}
+.floorbox.ok{border-color:var(--acc2);background:#12301c}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi .k{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.kpi .k .v{font-size:20px;font-weight:800}
+.kpi .k .l{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700}
+.pill.open{background:#274a58;color:var(--ink)}.pill.won{background:#14532d;color:#bbf7d0}.pill.lost{background:#4c1d1d;color:#fecaca}
+.muted{color:var(--muted);font-size:13px}
+.line-row{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--panel2)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px}
+summary{cursor:pointer;font-weight:700;font-size:15px}
+.help p,.help li{font-size:14px;color:#cfe2e9}
+.help ul{padding-left:18px}
+#printArea{display:none}
+@media(max-width:640px){
+ #savedTable thead{display:none}
+ #savedTable,#savedTable tbody,#savedTable tr,#savedTable td{display:block;width:100%}
+ #savedTable tr{border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:10px;background:var(--panel2)}
+ #savedTable td{border-bottom:none;padding:4px 2px;text-align:left}
+ #savedTable td.num{text-align:left}
+ #savedTable td:last-child{display:flex;flex-wrap:wrap;gap:6px}
+}
+@media print{
+ body{background:#fff;color:#000}
+ header,nav,main,.no-print{display:none!important}
+ #printArea{display:block!important;color:#000;font-family:Georgia,serif;padding:10px}
+ #printArea h1{font-size:22px;margin:0}
+ #printArea table{font-size:13px}
+ #printArea th,#printArea td{border-bottom:1px solid #999;color:#000}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>💦 GrimeMath</h1>
+  <div class="sub">Pressure washing quote calculator with a profit floor — price every job from real costs, not guesses.</div>
+  <div class="co" id="coHeader"></div>
+</header>
+<div style="text-align:center;padding:12px 16px;background:#fff8e6;border-bottom:2px solid #e8a13a;"><a href="https://travisbriggs.gumroad.com/l/gkxdcl" target="_blank" rel="noopener" style="display:inline-block;background:#e8a13a;color:#1d2b2e;font-weight:800;font-size:17px;padding:10px 22px;border-radius:8px;text-decoration:none;">Get the full version — $59</a></div>
+
+<nav id="tabs">
+  <button data-view="quote" class="active">New Quote</button>
+  <button data-view="saved">Saved Quotes</button>
+  <button data-view="settings">Settings &amp; Rates</button>
+  <button data-view="help">Help</button>
+</nav>
+<main>
+
+<!-- ============ QUOTE BUILDER ============ -->
+<section class="view active" id="view-quote">
+  <div class="card">
+    <h2>Customer &amp; Job</h2>
+    <div class="grid">
+      <div><label>Customer name</label><input id="qCustomer" type="text" placeholder="e.g. Dana Whitfield"></div>
+      <div><label>Job date</label><input id="qDate" type="date"></div>
+    </div>
+    <div><label>Address / job location</label><input id="qAddress" type="text" placeholder="Street, town"></div>
+    <div class="grid3">
+      <div><label>Crew size</label><input inputmode="decimal" id="qCrew" type="number" min="1" step="1" value="2"></div>
+      <div><label>Access difficulty</label>
+        <select id="qAccess"><option value="1">Easy (×1.00)</option><option value="1.1" selected>Standard (×1.10)</option><option value="1.25">Hard — gates, slope, tight (×1.25)</option></select></div>
+      <div><label>Home stories (house / roof lines)</label>
+        <select id="qStories"><option value="1">1 story (×1.00)</option><option value="1.15">2 stories (×1.15)</option><option value="1.3">3 stories (×1.30)</option></select></div>
+    </div>
+    <div class="grid">
+      <div><label>Water access</label>
+        <select id="qWater"><option value="spigot">Customer spigot (no cost)</option><option value="tank">Tank fill — we haul water (+setup time &amp; fee)</option></select></div>
+      <div><label>Travel — one-way miles</label><input inputmode="decimal" id="qMiles" type="number" min="0" step="0.1" value="8"></div>
+    </div>
+  </div>
+
+  <div class="card" id="measureCard">
+    <h2>Guided Measures</h2>
+    <p class="muted">Don't guess square footage. Measure, tap a button, and the result drops into the matching service line below — priced exactly as if you typed the quantity yourself.</p>
+    <h3>Rectangle area — driveway, deck, patio &amp; flatwork</h3>
+    <div class="grid3">
+      <div><label>Length (ft)</label><input inputmode="decimal" id="mRectL" type="number" min="0" step="0.5" placeholder="e.g. 20"></div>
+      <div><label>Width (ft)</label><input inputmode="decimal" id="mRectW" type="number" min="0" step="0.5" placeholder="e.g. 40"></div>
+      <div><label>Use for</label><select id="mRectTarget"><option value="driveway">Driveway &amp; Concrete</option><option value="deck">Deck Wash</option><option value="house">House Wash (soft wash)</option><option value="roof">Roof Soft Wash</option><option value="commercial">Commercial Flatwork</option></select></div>
+    </div>
+    <p class="muted" id="mRectResult">Area: —</p>
+    <div class="btnrow"><button class="btn secondary" id="mRectApply" type="button">Use this area</button></div>
+    <h3>House perimeter — soft wash estimator</h3>
+    <p class="muted">Washable wall area = house perimeter &times; wall height, where perimeter = 2 &times; (length + width). Use about 10 ft of wall height per story (1 story &asymp; 10 ft, 2 stories &asymp; 20 ft, 3 stories &asymp; 30 ft).</p>
+    <div class="grid3">
+      <div><label>House length (ft)</label><input inputmode="decimal" id="mHouseL" type="number" min="0" step="0.5" placeholder="e.g. 60"></div>
+      <div><label>House width (ft)</label><input inputmode="decimal" id="mHouseW" type="number" min="0" step="0.5" placeholder="e.g. 30"></div>
+      <div><label>Wall height (ft)</label><input inputmode="decimal" id="mHouseH" type="number" min="0" step="0.5" value="10"></div>
+    </div>
+    <p class="muted" id="mHouseResult">Perimeter: — · Washable area: —</p>
+    <div class="btnrow"><button class="btn secondary" id="mHouseApply" type="button">Use this house area</button></div>
+    <h3>Fence run builder</h3>
+    <p class="muted">Total run = sections &times; length per section. Washable surface = linear feet &times; fence height, doubled when you wash both sides. The fence service below is priced per linear foot, so the button drops in the total linear feet.</p>
+    <div class="grid3">
+      <div><label>Sections</label><input inputmode="decimal" id="mFenceSections" type="number" min="0" step="1" placeholder="e.g. 10"></div>
+      <div><label>Length per section (ft)</label><input inputmode="decimal" id="mFenceLen" type="number" min="0" step="0.5" value="8"></div>
+      <div><label>Fence height (ft)</label><input inputmode="decimal" id="mFenceH" type="number" min="0" step="0.5" value="6"></div>
+    </div>
+    <label style="display:block;margin-top:8px;color:var(--ink);font-size:14px"><input type="checkbox" id="mFenceBoth" style="width:auto;min-height:0" checked> Wash both sides</label>
+    <p class="muted" id="mFenceResult">Run: — · Washable surface: —</p>
+    <div class="btnrow"><button class="btn secondary" id="mFenceApply" type="button">Use this fence run</button></div>
+    <p class="muted" id="measureMsg"></p>
+  </div>
+
+  <div class="card">
+    <h2>Services</h2>
+    <p id="demoLinesNote" style="border:1px dashed var(--warn);border-radius:8px;padding:8px;color:var(--warn)">Example / demo lines — these are pre-filled to show how a quote works. They are <strong>not</strong> your own saved quote: change the quantities, rates and customer details (or remove the lines) to build a real quote.</p>
+    <div id="lineRows"></div>
+    <div class="btnrow">
+      <button class="btn secondary" id="addLineBtn">+ Add service line</button>
+    </div>
+    <p class="muted">Rate per unit is pre-filled from your Settings and editable per line. Condition drives price, wash time, and chemical strength. Quantity 0 lines are ignored.</p>
+  </div>
+
+  <div class="card">
+    <h2>Cost Engine &amp; Price</h2>
+    <div id="costBreakdown"></div>
+    <div class="kpi" style="margin-top:12px">
+      <div class="k"><div class="l">Break-even price</div><div class="v" id="kBreak">$0.00</div></div>
+      <div class="k"><div class="l">Recommended price</div><div class="v good" id="kRec">$0.00</div></div>
+      <div class="k"><div class="l">Premium price (+15%)</div><div class="v" id="kPrem">$0.00</div></div>
+    </div>
+    <div class="grid" style="margin-top:10px">
+      <div><label>Final price to quote ($)</label><input inputmode="decimal" id="qFinal" type="number" min="0" step="0.01"></div>
+      <div><label>Your margin at final price</label><input id="qMarginShow" type="text" readonly></div>
+    </div>
+    <div id="floorBox"></div>
+    <div><label>Service notes on the quote sheet (editable)</label><textarea id="qNotes"></textarea></div>
+    <div class="btnrow">
+      <button class="btn green" id="saveQuoteBtn">Save quote</button>
+      <button class="btn" id="printBtn">Print / save customer quote sheet</button>
+      <button class="btn secondary" id="resetQuoteBtn">Start fresh</button>
+    </div>
+    <p class="muted" id="saveMsg"></p>
+  </div>
+</section>
+
+<!-- ============ SAVED ============ -->
+<section class="view" id="view-saved">
+  <div class="card">
+    <h2>Saved Quotes</h2>
+    <div class="kpi" id="savedKpis"></div>
+    <div class="tblwrap" style="margin-top:12px"><table id="savedTable">
+      <thead><tr><th>Date</th><th>Customer</th><th>Services</th><th class="num">Price</th><th class="num">True cost</th><th class="num">Margin</th><th>Status</th><th></th></tr></thead>
+      <tbody id="savedBody"></tbody>
+    </table></div>
+    <p class="muted" id="savedEmpty"></p>
+  </div>
+  <div class="card">
+    <h2>Backup</h2>
+    <p class="muted">Export all settings + quotes as one JSON file, or restore from a backup. Data also stays in this browser automatically.</p>
+    <div class="btnrow">
+      <button class="btn secondary" id="exportBtn">Export backup (JSON)</button>
+      <label class="btn secondary" style="display:inline-flex;align-items:center;cursor:pointer">Import backup<input id="importFile" type="file" accept=".json,application/json" style="display:none"></label>
+      <button class="btn danger" id="clearDemoBtn">Clear demo data</button>
+      <button class="btn danger" id="wipeBtn">Erase ALL data</button>
+    </div>
+    <p class="muted" id="backupMsg"></p>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section class="view" id="view-settings">
+  <div class="card">
+    <h2>Company Info (prints on quote sheets)</h2>
+    <div class="grid">
+      <div><label>Company name</label><input id="sCompany" type="text"></div>
+      <div><label>Phone</label><input id="sPhone" type="text"></div>
+    </div>
+    <div class="grid">
+      <div><label>Email</label><input id="sEmail" type="text"></div>
+      <div><label>Default service notes</label><input id="sNotes" type="text"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Cost &amp; Margin Settings</h2>
+    <div class="grid3">
+      <div><label>Labor rate ($/hr per tech)</label><input inputmode="decimal" id="sLabor" type="number" min="0" step="0.5"></div>
+      <div><label>Equipment wear ($/hr on site)</label><input inputmode="decimal" id="sEquip" type="number" min="0" step="0.5"></div>
+      <div><label>Travel cost ($/mile)</label><input inputmode="decimal" id="sMile" type="number" min="0" step="0.05"></div>
+      <div><label>SH / bleach cost ($/gal)</label><input inputmode="decimal" id="sShCost" type="number" min="0" step="0.25"></div>
+      <div><label>Surfactant cost ($/gal of mix)</label><input inputmode="decimal" id="sSurfCost" type="number" min="0" step="0.05"></div>
+      <div><label>Flat fuel per job ($)</label><input inputmode="decimal" id="sFuel" type="number" min="0" step="1"></div>
+      <div><label>Overhead (% added to cost)</label><input inputmode="decimal" id="sOverhead" type="number" min="0" step="1"></div>
+      <div><label>PROFIT FLOOR — minimum margin (%)</label><input inputmode="decimal" id="sFloor" type="number" min="0" max="90" step="1"></div>
+      <div><label>Target margin for Recommended (%)</label><input inputmode="decimal" id="sTarget" type="number" min="0" max="90" step="1"></div>
+      <div><label>Minimum job charge ($)</label><input inputmode="decimal" id="sMinJob" type="number" min="0" step="1"></div>
+      <div><label>Tank-fill fee when hauling water ($)</label><input inputmode="decimal" id="sTankFee" type="number" min="0" step="1"></div>
+      <div><label>Tank-fill extra setup (hours)</label><input inputmode="decimal" id="sTankHrs" type="number" min="0" step="0.25"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Default Service Rates &amp; Production</h2>
+    <p class="muted">These pre-fill every new quote line. Rate = what you charge per unit before multipliers. Production = units one crew washes per hour on a light-condition job. Mix = gallons of downstream mix sprayed per 1,000 units (chemical estimate).</p>
+    <div class="tblwrap"><table>
+      <thead><tr><th>Service</th><th>Unit</th><th class="num">Rate $/unit</th><th class="num">Production /hr</th><th class="num">Mix gal /1,000</th></tr></thead>
+      <tbody id="svcSettingsBody"></tbody>
+    </table></div>
+    <div class="btnrow"><button class="btn" id="saveSettingsBtn">Save settings</button></div>
+    <p class="muted" id="settingsMsg"></p>
+  </div>
+</section>
+
+<!-- ============ HELP ============ -->
+<section class="view help" id="view-help">
+  <details open><summary>How pricing works</summary>
+    <p>Each service line: <strong>quantity × your rate × condition multiplier × access multiplier</strong> (stories multiplier applies to house and roof lines). The cost engine separately computes what the job truly costs you:</p>
+    <ul>
+      <li><strong>Wash time</strong> = quantity ÷ production rate, slowed by condition (moderate ×1.25 time, heavy ×1.6 time), plus 15 minutes setup per line.</li>
+      <li><strong>Labor</strong> = total hours × crew size × your labor rate.</li>
+      <li><strong>Chemical</strong> = mix gallons (per 1,000 units) at an SH strength set by condition — light 0.8%, moderate 1.2%, heavy 2.0% — plus surfactant.</li>
+      <li><strong>Plus</strong> equipment wear per hour, flat fuel, travel miles, and the tank-fill fee/time when there's no spigot.</li>
+    </ul>
+    <p><strong>Break-even</strong> = true cost + overhead. <strong>Recommended</strong> prices to your target margin. <strong>Premium</strong> = recommended + 15%.</p>
+  </details>
+  <details><summary>The profit floor</summary>
+    <p>Your floor is a minimum margin (default 30%) on the final price. If you type a final price below the floor price, GrimeMath shows a red warning and <strong>will not save the quote</strong> until you either raise the price or tick the one-time override box and own the decision. The floor price also never drops below your minimum job charge. This is the guardrail that stops "busy but broke" jobs.</p>
+  </details>
+  <details><summary>Localize the default rates — important</summary>
+    <p>The pre-loaded rates (house $0.22/sq ft, driveway $0.20/sq ft, roof $0.45/sq ft, etc.) are <strong>national planning defaults</strong> inside the published $0.15–$0.60/sq ft bands — they are starting points, not your market's prices. Before quoting real work: check what 3–5 local competitors charge, set your rates and production speeds to match YOUR rig and YOUR market in Settings, and re-check after 10 jobs against your actual times. A calculator with wrong inputs gives confidently wrong prices.</p>
+  </details>
+  <details><summary>Your data</summary>
+    <p>Everything is stored only in this browser (localStorage) on this device — no account, no cloud, no tracking, works fully offline. Use Export backup in Saved Quotes before switching browsers or devices. Clearing browser data erases the app — export first.</p>
+  </details>
+  <details><summary>Demo data</summary>
+    <p>A sample quote (Whitfield — house wash + driveway) is pre-loaded so you can see a finished quote, its cost breakdown, and the floor in action. "Clear demo data" in Saved Quotes removes it in one click.</p>
+  </details>
+  <details><summary>Guided measures &amp; voice entry</summary>
+    <p><strong>Guided Measures</strong> (top of New Quote) does the measuring math for you: enter a rectangle's length &times; width for a driveway, deck, patio or flatwork and tap "Use this area"; enter a house's length, width and wall height and the perimeter estimator works out the washable soft-wash square footage; or build a fence run from sections &times; length per section and get the total linear feet (and the washable surface, both sides counted when you tick the box). Each result drops into the matching service line and is priced exactly as if you typed it.</p>
+    <p><strong>Voice entry:</strong> tap the microphone button beside any text or number field and say the value — for a number field, say it in words ("twenty by forty" won't fit one field, so say "twenty" in the length field and "forty" in the width field, or "eight hundred" for a quantity). The words land in the field as if typed; nothing is saved or sent until you tap the usual buttons. Where voice isn't available on your device or browser, the microphone shows a short note and typing works as always.</p>
+  </details>
+  <details><summary>Stuck? Email us</summary>
+    <p><strong>GrimeMath v1.1</strong></p>
+    <p>Questions or trouble? <a class="btn" id="helpEmailBtn" style="display:inline-block; min-height:48px; padding:12px 20px; box-sizing:border-box; text-decoration:none;" href="mailto:whitewolfbackoffice@gmail.com?subject=GrimeMath%20help%20%E2%80%94%20v1.1&amp;body=Tell%20us%20what%20you%20were%20trying%20to%20do%20and%20what%20happened%3A%0A%0A">✉️ Email us</a></p>
+    <p>Tell us what you were trying to do and what happened — we read every message. Your data lives only in this browser on this device, and we never see it; use Export backup in Saved Quotes before switching devices, so a lost phone never means lost quotes.</p>
+  </details>
+</section>
+</main>
+
+<div id="printArea"></div>
+
+<script>
+"use strict";
+/* ================= GrimeMath ================= */
+var STORE_KEY = "washpricepro.v1";
+
+var SERVICES = [
+  {id:"house",     name:"House Wash (soft wash)",        unit:"sq ft",    rate:0.22, prod:900, mix:12, story:true},
+  {id:"driveway",  name:"Driveway & Concrete",           unit:"sq ft",    rate:0.20, prod:700, mix:6,  story:false},
+  {id:"deck",      name:"Deck Wash",                     unit:"sq ft",    rate:0.35, prod:300, mix:10, story:false},
+  {id:"fence",     name:"Fence Wash",                    unit:"linear ft",rate:4.00, prod:80,  mix:8,  story:false},
+  {id:"roof",      name:"Roof Soft Wash",                unit:"sq ft",    rate:0.45, prod:600, mix:14, story:true},
+  {id:"commercial",name:"Commercial Flatwork",           unit:"sq ft",    rate:0.18, prod:1000, mix:6,  story:false}
+];
+var CONDITIONS = {
+  light:   {label:"Light — dust/dirt",        price:1.00, time:1.00, sh:0.008},
+  moderate:{label:"Moderate — visible algae", price:1.20, time:1.25, sh:0.012},
+  heavy:   {label:"Heavy — thick growth",     price:1.45, time:1.60, sh:0.020}
+};
+var SETUP_HRS_PER_LINE = 0.25;
+
+function defaultSettings(){
+  var svc = {};
+  SERVICES.forEach(function(s){ svc[s.id] = {rate:s.rate, prod:s.prod, mix:s.mix}; });
+  return {
+    company:"", phone:"", email:"",
+    notes:"We pre-wet and cover plants and landscaping before washing, rinse all surfaces, and leave the property clean. Quote valid 30 days.",
+    labor:45, equip:12, mile:0.70, shCost:4.50, surfCost:0.15, fuel:18,
+    overhead:10, floor:30, target:40, minJob:149, tankFee:25, tankHrs:0.5,
+    services: svc
+  };
+}
+function demoQuote(){
+  return {
+    id:"demo-1", demo:true, customer:"Dana Whitfield (DEMO)", address:"14 Lakeview Dr",
+    date: todayStr(), crew:2, access:1.1, stories:1.15, water:"spigot", miles:8,
+    notes:"We pre-wet and cover plants and landscaping before washing, rinse all surfaces, and leave the property clean. Quote valid 30 days.",
+    lines:[
+      {service:"house", qty:2200, rate:0.22, condition:"moderate"},
+      {service:"driveway", qty:800, rate:0.20, condition:"heavy"}
+    ],
+    finalPrice: 989.91, status:"open", created: Date.now()
+  };
+}
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function pad(n){ return (n<10?"0":"")+n; }
+
+var state = { settings: defaultSettings(), quotes: [] };
+
+function svcById(id){ for(var i=0;i<SERVICES.length;i++) if(SERVICES[i].id===id) return SERVICES[i]; return SERVICES[0]; }
+
+/* ---------- safe numbers ---------- */
+function num(v, def){
+  var n = parseFloat(v);
+  if(!isFinite(n)) return def||0;
+  if(n < 0) return 0;
+  if(n > 999999999) return 999999999;
+  return n;
+}
+function pct(v, def){ var n = num(v, def); return n > 90 ? 90 : n; }
+function money(n){ if(!isFinite(n)) n = 0; return "$" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+
+/* ---------- persistence ---------- */
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(!raw){ state.quotes = [demoQuote()]; save(); return; }
+    var parsed = JSON.parse(raw);
+    if(parsed && parsed.settings && parsed.quotes){
+      var d = defaultSettings();
+      for(var k in d){ if(parsed.settings[k] === undefined) parsed.settings[k] = d[k]; }
+      state = parsed;
+    } else { state.quotes = [demoQuote()]; }
+  }catch(e){ state = { settings: defaultSettings(), quotes: [demoQuote()] }; }
+}
+
+/* ---------- pricing engine (pure, testable) ---------- */
+function computeQuote(q, settings){
+  var lines = [], totalHours = 0, chemCost = 0, grossByRate = 0;
+  (q.lines||[]).forEach(function(ln){
+    var svc = svcById(ln.service);
+    var cfg = (settings.services && settings.services[svc.id]) || {rate:svc.rate, prod:svc.prod, mix:svc.mix};
+    var qty = num(ln.qty, 0);
+    var rate = num(ln.rate, cfg.rate);
+    if(qty <= 0){ return; }
+    var cond = CONDITIONS[ln.condition] || CONDITIONS.light;
+    var storyMult = svc.story ? num(q.stories, 1) : 1;
+    var price = qty * rate * cond.price * num(q.access, 1) * storyMult;
+    var prod = num(cfg.prod, svc.prod); if(prod <= 0) prod = svc.prod;
+    var hours = (qty / prod) * cond.time + SETUP_HRS_PER_LINE;
+    var mixGal = (qty/1000) * num(cfg.mix, svc.mix);
+    var shGal = mixGal * cond.sh;
+    var chem = shGal * num(settings.shCost, 0) + mixGal * num(settings.surfCost, 0);
+    lines.push({service:svc.id, name:svc.name, unit:svc.unit, qty:qty, rate:rate,
+      condition:ln.condition, condLabel:cond.label, price:price, hours:hours,
+      mixGal:mixGal, shGal:shGal, chem:chem});
+    totalHours += hours; chemCost += chem; grossByRate += price;
+  });
+  var tankHrs = q.water === "tank" ? num(settings.tankHrs, 0) : 0;
+  totalHours += tankHrs;
+  var crew = Math.max(1, Math.round(num(q.crew, 1)));
+  var labor = totalHours * crew * num(settings.labor, 0);
+  var equip = totalHours * num(settings.equip, 0);
+  var travel = num(q.miles, 0) * 2 * num(settings.mile, 0);
+  var tankCost = q.water === "tank" ? num(settings.tankFee, 0) : 0;
+  var trueCost = labor + chemCost + equip + num(settings.fuel, 0) + travel + tankCost;
+  var breakEven = trueCost * (1 + pct(settings.overhead, 10)/100);
+  var minJob = num(settings.minJob, 0);
+  var floorPrice = breakEven / (1 - pct(settings.floor, 30)/100);
+  if(floorPrice < minJob) floorPrice = minJob;
+  if(breakEven < minJob && breakEven > 0){ /* floor already >= min job */ }
+  var recommended = breakEven / (1 - pct(settings.target, 40)/100);
+  if(recommended < floorPrice) recommended = floorPrice;
+  var premium = recommended * 1.15;
+  return { lines:lines, hours:totalHours, labor:labor, chem:chemCost, equip:equip,
+    travel:travel, fuel:num(settings.fuel,0), tankCost:tankCost, trueCost:trueCost,
+    breakEven:breakEven, floorPrice:floorPrice, recommended:recommended,
+    premium:premium, grossByRate:grossByRate };
+}
+function marginAt(price, c){ if(!price || price <= 0 || !isFinite(price)) return 0; return (price - c.breakEven) / price * 100; }
+
+/* exposed for testing */
+window.WP = { computeQuote: computeQuote, marginAt: marginAt, num: num, esc: esc, SERVICES: SERVICES, CONDITIONS: CONDITIONS, defaultSettings: defaultSettings };
+</script>
+<script>
+"use strict";
+/* ================= UI ================= */
+var $ = function(id){ return document.getElementById(id); };
+
+function switchView(name){
+  var views = document.querySelectorAll("section.view");
+  for(var i=0;i<views.length;i++) views[i].classList.toggle("active", views[i].id === "view-"+name);
+  var btns = document.querySelectorAll("#tabs button");
+  for(var j=0;j<btns.length;j++) btns[j].classList.toggle("active", btns[j].getAttribute("data-view") === name);
+  if(name === "saved") renderSaved();
+  window.scrollTo(0,0);
+}
+
+/* ---------- quote builder ---------- */
+function lineRowHTML(ln){
+  var svcOpts = SERVICES.map(function(s){
+    return '<option value="'+s.id+'"'+(ln.service===s.id?" selected":"")+'>'+esc(s.name)+' ('+esc(s.unit)+')</option>';
+  }).join("");
+  var condOpts = Object.keys(CONDITIONS).map(function(k){
+    return '<option value="'+k+'"'+(ln.condition===k?" selected":"")+'>'+esc(CONDITIONS[k].label)+' (×'+CONDITIONS[k].price.toFixed(2)+')</option>';
+  }).join("");
+  var svc = svcById(ln.service);
+  return '<div class="grid3">'
+    + '<div><label>Service</label><select class="ln-service">'+svcOpts+'</select></div>'
+    + '<div><label>Quantity ('+esc(svc.unit)+')</label><input inputmode="decimal" class="ln-qty" type="number" min="0" step="1" value="'+esc(ln.qty)+'"></div>'
+    + '<div><label>Rate ($/'+esc(svc.unit)+')</label><input inputmode="decimal" class="ln-rate" type="number" min="0" step="0.01" value="'+esc(ln.rate)+'"></div>'
+    + '</div><div class="grid"><div><label>Surface condition</label><select class="ln-cond">'+condOpts+'</select></div>'
+    + '<div style="display:flex;align-items:flex-end"><button class="btn danger small ln-remove" type="button">Remove line</button></div></div>';
+}
+function renderLines(lines){
+  var wrap = $("lineRows"); wrap.innerHTML = "";
+  lines.forEach(function(ln){
+    var div = document.createElement("div");
+    div.className = "line-row"; div.innerHTML = lineRowHTML(ln);
+    wrap.appendChild(div);
+  });
+  bindLineEvents();
+}
+function bindLineEvents(){
+  var rows = document.querySelectorAll(".line-row");
+  rows.forEach(function(row){
+    row.querySelector(".ln-service").addEventListener("change", function(){
+      markBuilderEdited();
+      var svc = svcById(this.value);
+      var cfg = state.settings.services[svc.id];
+      row.querySelector(".ln-rate").value = cfg ? cfg.rate : svc.rate;
+      var fresh = readLines();
+      renderLines(fresh); recalc();
+    });
+    row.querySelector(".ln-remove").addEventListener("click", function(){
+      markBuilderEdited(); row.remove(); recalc();
+    });
+    ["input","change"].forEach(function(ev){
+      row.addEventListener(ev, function(){ markBuilderEdited(); recalc(); });
+    });
+  });
+}
+function readLines(){
+  var out = [];
+  document.querySelectorAll(".line-row").forEach(function(row){
+    out.push({
+      service: row.querySelector(".ln-service").value,
+      qty: num(row.querySelector(".ln-qty").value, 0),
+      rate: num(row.querySelector(".ln-rate").value, 0),
+      condition: row.querySelector(".ln-cond").value
+    });
+  });
+  return out;
+}
+function readQuoteForm(){
+  return {
+    customer: $("qCustomer").value, date: $("qDate").value || todayStr(),
+    address: $("qAddress").value, crew: num($("qCrew").value, 2),
+    access: num($("qAccess").value, 1.1), stories: num($("qStories").value, 1),
+    water: $("qWater").value, miles: num($("qMiles").value, 0),
+    notes: $("qNotes").value, lines: readLines()
+  };
+}
+var lastCalc = null;
+var floorOverrideChecked = false;
+var editingQuoteId = null;
+var builderIsExample = true;
+function updateDemoNote(){ var n=$("demoLinesNote"); if(n) n.style.display = builderIsExample ? "" : "none"; }
+function markBuilderEdited(){ if(builderIsExample){ builderIsExample = false; updateDemoNote(); } }
+function recalc(){
+  var q = readQuoteForm();
+  var c = computeQuote(q, state.settings);
+  lastCalc = c;
+  var rows = c.lines.map(function(l){
+    return "<tr><td>"+esc(l.name)+"</td><td class='num'>"+l.qty.toLocaleString()+" "+esc(l.unit)+"</td>"
+      + "<td class='num'>"+money(l.rate)+"</td><td>"+esc(l.condLabel.split(" — ")[0])+"</td>"
+      + "<td class='num'>"+l.hours.toFixed(2)+"</td><td class='num'>"+money(l.price)+"</td></tr>";
+  }).join("");
+  $("costBreakdown").innerHTML =
+    (c.lines.length ? '<div class="tblwrap"><table><thead><tr><th>Service</th><th class="num">Qty</th><th class="num">Rate</th><th>Condition</th><th class="num">Hours</th><th class="num">Line price</th></tr></thead><tbody>'+rows+"</tbody></table></div>" : '<p class="muted">Add a service line with a quantity to see the cost breakdown.</p>')
+    + '<table style="margin-top:10px"><tbody>'
+    + '<tr><td>Labor ('+c.hours.toFixed(2)+' hrs × crew × rate)</td><td class="num">'+money(c.labor)+'</td></tr>'
+    + '<tr><td>Chemicals (SH + surfactant)</td><td class="num">'+money(c.chem)+'</td></tr>'
+    + '<tr><td>Equipment wear</td><td class="num">'+money(c.equip)+'</td></tr>'
+    + '<tr><td>Fuel (flat)</td><td class="num">'+money(c.fuel)+'</td></tr>'
+    + '<tr><td>Travel (round trip)</td><td class="num">'+money(c.travel)+'</td></tr>'
+    + (c.tankCost ? '<tr><td>Tank-fill fee (hauling water)</td><td class="num">'+money(c.tankCost)+'</td></tr>' : '')
+    + '<tr><td><strong>True job cost</strong></td><td class="num"><strong>'+money(c.trueCost)+'</strong></td></tr>'
+    + '<tr><td>Break-even (cost + '+pct(state.settings.overhead,10)+'% overhead)</td><td class="num">'+money(c.breakEven)+'</td></tr>'
+    + "</tbody></table>";
+  $("kBreak").textContent = money(c.breakEven);
+  $("kRec").textContent = money(c.recommended);
+  $("kPrem").textContent = money(c.premium);
+  var finalEl = $("qFinal");
+  if(document.activeElement !== finalEl && num(finalEl.value, 0) <= 0 && c.recommended > 0){
+    finalEl.value = c.recommended.toFixed(2);
+  }
+  var fin = num(finalEl.value, 0);
+  var m = marginAt(fin, c);
+  $("qMarginShow").value = fin > 0 ? m.toFixed(1) + "%" : "—";
+  var box = $("floorBox");
+  if(fin > 0 && fin < c.floorPrice){
+    box.innerHTML = '<div class="floorbox"><strong class="bad">⚠ BELOW YOUR PROFIT FLOOR.</strong> '
+      + 'Floor price is <strong>'+money(c.floorPrice)+'</strong> (min margin '+pct(state.settings.floor,30)+'%'
+      + (num(state.settings.minJob,0) > 0 ? ' and min job charge '+money(state.settings.minJob) : '')+'). '
+      + 'At '+money(fin)+' your margin is '+m.toFixed(1)+'%. Raise the price, or override consciously: '
+      + '<label style="display:block;margin-top:8px;color:var(--ink);font-size:14px"><input type="checkbox" id="floorOverride" style="width:auto;min-height:0"'+(floorOverrideChecked ? " checked" : "")+'> I understand — save below the floor anyway</label></div>';
+    var ovEl = $("floorOverride");
+    if(ovEl) ovEl.addEventListener("change", function(){ floorOverrideChecked = this.checked; });
+  } else if(fin > 0){
+    floorOverrideChecked = false;
+    box.innerHTML = '<div class="floorbox ok"><strong class="good">✓ Above the profit floor</strong> ('+money(c.floorPrice)+'). Margin at this price: '+m.toFixed(1)+'%.</div>';
+  } else {
+    box.innerHTML = "";
+  }
+}
+function saveQuote(){
+  var q = readQuoteForm();
+  var c = lastCalc || computeQuote(q, state.settings);
+  var fin = num($("qFinal").value, 0);
+  var msg = $("saveMsg");
+  if(!q.customer.trim()){ msg.innerHTML = '<span class="bad">Enter a customer name first.</span>'; return; }
+  if(!c.lines.length){ msg.innerHTML = '<span class="bad">Add at least one service line with a quantity above 0.</span>'; return; }
+  if(fin <= 0){ msg.innerHTML = '<span class="bad">Enter a final price.</span>'; return; }
+  var override = $("floorOverride");
+  if(fin < c.floorPrice && !floorOverrideChecked && !(override && override.checked)){
+    msg.innerHTML = '<span class="bad">Blocked by your profit floor — raise the price to at least '+money(c.floorPrice)+' or tick the override box.</span>'; return;
+  }
+  var snapLines = c.lines.map(function(l){ return {service:l.service, name:l.name, unit:l.unit, qty:l.qty, rate:l.rate, condition:l.condition, price:l.price}; });
+  var snapshot = { lines: snapLines, total: fin, lineSum: snapLines.reduce(function(a,l){return a+l.price;},0), trueCost: c.trueCost, breakEven: c.breakEven, savedAt: Date.now() };
+  if(editingQuoteId){
+    var existing = null;
+    state.quotes.forEach(function(x){ if(x.id===editingQuoteId) existing = x; });
+    if(existing){
+      var upd = JSON.parse(JSON.stringify(q));
+      upd.id = existing.id; upd.finalPrice = fin; upd.trueCost = c.trueCost; upd.breakEven = c.breakEven;
+      upd.margin = marginAt(fin, c); upd.status = existing.status || "open"; upd.created = existing.created || Date.now();
+      if(existing.demo) upd.demo = existing.demo;
+      upd.lines = snapLines.map(function(l){ return {service:l.service, qty:l.qty, rate:l.rate, condition:l.condition, price:l.price}; });
+      upd.snapshot = snapshot;
+      for(var kk in upd) existing[kk] = upd[kk];
+      save(); floorOverrideChecked = false; editingQuoteId = null;
+      msg.innerHTML = '<span class="good">Updated ✓</span> — the saved quote was updated in place under Saved Quotes.';
+      return;
+    }
+    editingQuoteId = null;
+  }
+  var record = JSON.parse(JSON.stringify(q));
+  record.id = "q" + Date.now() + "-" + Math.floor(Math.random()*100000);
+  record.finalPrice = fin; record.trueCost = c.trueCost; record.breakEven = c.breakEven;
+  record.margin = marginAt(fin, c); record.status = "open"; record.created = Date.now();
+  record.lines = snapLines.map(function(l){ return {service:l.service, qty:l.qty, rate:l.rate, condition:l.condition, price:l.price}; });
+  record.snapshot = snapshot;
+  state.quotes.unshift(record);
+  save();
+  floorOverrideChecked = false;
+  msg.innerHTML = '<span class="good">Saved ✓</span> — see it under Saved Quotes.';
+}
+function loadQuoteIntoBuilder(q){
+  editingQuoteId = q.id; builderIsExample = false; updateDemoNote();
+  $("qCustomer").value = q.customer || ""; $("qAddress").value = q.address || ""; $("qDate").value = q.date || todayStr();
+  $("qCrew").value = q.crew || 2; $("qAccess").value = String(q.access != null ? q.access : 1.1); $("qStories").value = String(q.stories != null ? q.stories : 1);
+  $("qWater").value = q.water || "spigot"; $("qMiles").value = q.miles || 0; $("qNotes").value = q.notes || "";
+  var lines = (q.lines && q.lines.length ? q.lines : [{service:"house", qty:0, rate: state.settings.services.house.rate, condition:"light"}]).map(function(l){ return {service:l.service, qty:l.qty, rate:l.rate, condition:l.condition||"light"}; });
+  renderLines(lines);
+  $("qFinal").value = q.finalPrice != null ? q.finalPrice : "";
+  floorOverrideChecked = false; recalc();
+  // recalc may auto-fill final if 0; restore stored price explicitly
+  if(q.finalPrice != null) $("qFinal").value = q.finalPrice;
+  recalc();
+  $("saveMsg").innerHTML = '<span class="good">Loaded for editing</span> — changes save back to this saved quote.';
+  switchView("quote");
+}
+function snapshotForPrint(q, c){
+  if(q && q.snapshot && Array.isArray(q.snapshot.lines) && q.snapshot.lines.length){
+    return { lines: q.snapshot.lines, total: num(q.snapshot.total, num(q.finalPrice,0)) };
+  }
+  if(q && Array.isArray(q.lines) && q.lines.length && q.lines.every(function(l){ return typeof l.price === "number"; })){
+    // legacy saved quotes stored priced lines at save time — treat them as the snapshot
+    var ls = q.lines.map(function(l){ var svc = svcById(l.service); return {service:l.service, name:svc.name, unit:svc.unit, qty:l.qty, rate:l.rate, condition:l.condition, price:l.price}; });
+    return { lines: ls, total: num(q.finalPrice,0) };
+  }
+  return { lines: c ? c.lines : [], total: num(q && q.finalPrice, c ? c.recommended : 0) };
+}
+function resetQuote(){
+  editingQuoteId = null; builderIsExample = true; updateDemoNote();
+  floorOverrideChecked = false;
+  $("qCustomer").value = ""; $("qAddress").value = ""; $("qDate").value = todayStr();
+  $("qCrew").value = 2; $("qMiles").value = 8; $("qFinal").value = "";
+  $("qNotes").value = state.settings.notes;
+  renderLines([{service:"house", qty:2000, rate: state.settings.services.house.rate, condition:"moderate"}]);
+  recalc();
+}
+
+/* ---------- guided measures (pure arithmetic; results feed the same single quote record) ---------- */
+function measureRect(l, w){ return num(l, 0) * num(w, 0); }
+function measureHouse(l, w, h){
+  var perimeter = 2 * (num(l, 0) + num(w, 0));
+  return { perimeter: perimeter, area: perimeter * num(h, 0) };
+}
+function measureFence(sections, lenPer, height, both){
+  var lf = num(sections, 0) * num(lenPer, 0);
+  var sides = both ? 2 : 1;
+  return { linearFeet: lf, sqft: lf * num(height, 0) * sides, sides: sides };
+}
+function applyMeasureToService(serviceId, qty){
+  if(!(qty > 0) || !isFinite(qty)) return false;
+  markBuilderEdited();
+  var cur = readLines();
+  var found = false;
+  for(var i = 0; i < cur.length; i++){ if(cur[i].service === serviceId){ cur[i].qty = qty; found = true; break; } }
+  if(!found){
+    var svc = svcById(serviceId);
+    var cfg = state.settings.services[serviceId];
+    cur.push({service: serviceId, qty: qty, rate: cfg ? cfg.rate : svc.rate, condition: "light"});
+  }
+  renderLines(cur); recalc();
+  return true;
+}
+function fmtNum(n){ return isFinite(n) ? Number(n.toFixed(2)).toLocaleString() : "—"; }
+function updateMeasureResults(){
+  var ra = measureRect($("mRectL").value, $("mRectW").value);
+  $("mRectResult").textContent = ra > 0 ? ("Area: " + fmtNum(ra) + " sq ft") : "Area: —";
+  var hm = measureHouse($("mHouseL").value, $("mHouseW").value, $("mHouseH").value);
+  $("mHouseResult").textContent = hm.perimeter > 0 ? ("Perimeter: " + fmtNum(hm.perimeter) + " ft · Washable area: " + fmtNum(hm.area) + " sq ft") : "Perimeter: — · Washable area: —";
+  var fm = measureFence($("mFenceSections").value, $("mFenceLen").value, $("mFenceH").value, $("mFenceBoth").checked);
+  $("mFenceResult").textContent = fm.linearFeet > 0 ? ("Run: " + fmtNum(fm.linearFeet) + " linear ft · Washable surface: " + fmtNum(fm.sqft) + " sq ft (" + fm.sides + (fm.sides === 2 ? " sides" : " side") + ")") : "Run: — · Washable surface: —";
+  return { rect: ra, house: hm, fence: fm };
+}
+function wireMeasures(){
+  ["mRectL","mRectW","mHouseL","mHouseW","mHouseH","mFenceSections","mFenceLen","mFenceH"].forEach(function(id){
+    $(id).addEventListener("input", updateMeasureResults); $(id).addEventListener("change", updateMeasureResults);
+  });
+  $("mFenceBoth").addEventListener("change", updateMeasureResults);
+  $("mRectApply").addEventListener("click", function(){
+    var r = updateMeasureResults();
+    var target = $("mRectTarget").value;
+    if(applyMeasureToService(target, r.rect)){ $("measureMsg").innerHTML = '<span class="good">Area set ✓</span> — ' + fmtNum(r.rect) + ' sq ft is now the quantity on the ' + esc(svcById(target).name) + ' line below.'; }
+    else { $("measureMsg").innerHTML = '<span class="bad">Enter a length and width first.</span>'; }
+  });
+  $("mHouseApply").addEventListener("click", function(){
+    var r = updateMeasureResults();
+    if(applyMeasureToService("house", r.house.area)){ $("measureMsg").innerHTML = '<span class="good">House area set ✓</span> — ' + fmtNum(r.house.area) + ' sq ft (perimeter ' + fmtNum(r.house.perimeter) + ' ft) is now the House Wash quantity below.'; }
+    else { $("measureMsg").innerHTML = '<span class="bad">Enter the house length, width and wall height first.</span>'; }
+  });
+  $("mFenceApply").addEventListener("click", function(){
+    var r = updateMeasureResults();
+    if(applyMeasureToService("fence", r.fence.linearFeet)){ $("measureMsg").innerHTML = '<span class="good">Fence run set ✓</span> — ' + fmtNum(r.fence.linearFeet) + ' linear ft (' + fmtNum(r.fence.sqft) + ' sq ft washable surface) is now the Fence Wash quantity below.'; }
+    else { $("measureMsg").innerHTML = '<span class="bad">Enter the number of sections and the length per section first.</span>'; }
+  });
+  updateMeasureResults();
+}
+
+/* ---------- print ---------- */
+function buildPrint(q, c){
+  var s = state.settings;
+  var snap = snapshotForPrint(q, c);
+  var lineSum = snap.lines.reduce(function(a,l){ return a + num(l.price,0); },0);
+  var total = snap.total || num(q.finalPrice, c ? c.recommended : 0);
+  var rows = snap.lines.map(function(l){
+    return "<tr><td>"+esc(l.name || svcById(l.service).name)+"</td><td class='num'>"+num(l.qty,0).toLocaleString()+" "+esc(l.unit || svcById(l.service).unit)+"</td><td class='num'>"+money(l.rate)+"</td><td class='num'>"+money(l.price)+"</td></tr>";
+  }).join("");
+  var adj = total - lineSum;
+  if(Math.abs(adj) > 0.005){
+    rows += "<tr><td>Adjustment / discount</td><td class='num'></td><td class='num'></td><td class='num'>"+money(adj)+"</td></tr>";
+  }
+  $("printArea").innerHTML =
+    "<h1>"+esc(s.company || "Pressure Washing")+"</h1>"
+    + "<p>"+esc(s.phone)+" &nbsp; "+esc(s.email)+"</p>"
+    + "<h2 style='font-size:17px'>Pressure Washing Quote</h2>"
+    + "<p><strong>Customer:</strong> "+esc(q.customer)+"<br><strong>Location:</strong> "+esc(q.address)+"<br><strong>Date:</strong> "+esc(q.date)+"</p>"
+    + "<table><thead><tr><th>Service</th><th class='num'>Qty</th><th class='num'>Rate</th><th class='num'>Amount</th></tr></thead><tbody>"+rows+"</tbody></table>"
+    + "<p style='text-align:right;font-size:16px'><strong>Total: "+money(total)+"</strong></p>"
+    + "<p>"+esc(q.notes || s.notes)+"</p>"
+    + "<p style='color:#444;font-size:12px'>Thank you for the opportunity to earn your business.</p>";
+}
+
+/* ---------- saved ---------- */
+function statusPill(st){ return '<span class="pill '+st+'">'+st.toUpperCase()+"</span>"; }
+function renderSaved(){
+  var qs = state.quotes;
+  var won = qs.filter(function(q){return q.status==="won";});
+  var rev = won.reduce(function(a,q){return a + num(q.finalPrice,0);},0);
+  var prof = won.reduce(function(a,q){return a + (num(q.finalPrice,0) - num(q.breakEven,0));},0);
+  $("savedKpis").innerHTML =
+    '<div class="k"><div class="l">Quotes saved</div><div class="v">'+qs.length+'</div></div>'
+    + '<div class="k"><div class="l">Won</div><div class="v">'+won.length+'</div></div>'
+    + '<div class="k"><div class="l">Won revenue</div><div class="v">'+money(rev)+'</div></div>'
+    + '<div class="k"><div class="l">Margin $ on won (price − break-even)</div><div class="v">'+money(prof)+'</div></div>';
+  $("savedEmpty").textContent = qs.length ? "" : "No saved quotes yet. Build one under New Quote and hit Save quote.";
+  $("savedBody").innerHTML = qs.map(function(q){
+    var names = (q.lines||[]).map(function(l){ return svcById(l.service).name.split(" (")[0]; }).join(", ");
+    return "<tr><td>"+esc(q.date)+"</td><td>"+esc(q.customer)+(q.demo?' <span class="pill open">DEMO</span>':"")+"</td>"
+      + "<td>"+esc(names)+"</td><td class='num'>"+money(q.finalPrice)+"</td><td class='num'>"+money(q.trueCost)+"</td>"
+      + "<td class='num'>"+num(q.margin,0).toFixed(1)+"%</td><td>"+statusPill(q.status||"open")+"</td>"
+      + '<td><button class="btn secondary small" data-act="open" data-id="'+esc(q.id)+'">Open / Edit</button> '
+      + '<button class="btn secondary small" data-act="dup" data-id="'+esc(q.id)+'">Duplicate</button> '
+      + ((q.status==="won"||q.status==="lost") ? '<button class="btn secondary small" data-act="reopen" data-id="'+esc(q.id)+'">Reopen</button> ' : '')
+      + '<button class="btn secondary small" data-act="won" data-id="'+esc(q.id)+'">Won</button> '
+      + '<button class="btn secondary small" data-act="lost" data-id="'+esc(q.id)+'">Lost</button> '
+      + '<button class="btn secondary small" data-act="print" data-id="'+esc(q.id)+'">Print</button> '
+      + '<button class="btn danger small" data-act="del" data-id="'+esc(q.id)+'">Delete</button></td></tr>';
+  }).join("");
+  $("savedBody").querySelectorAll("button[data-act]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var id = this.getAttribute("data-id"), act = this.getAttribute("data-act");
+      var q = null;
+      state.quotes.forEach(function(x){ if(x.id===id) q = x; });
+      if(!q) return;
+      if(act === "del"){ if(!window.confirm("Delete the saved quote for "+(q.customer||"this customer")+"? This cannot be undone.")) return; state.quotes = state.quotes.filter(function(x){return x.id!==id;}); save(); renderSaved(); return; }
+      if(act === "open"){ loadQuoteIntoBuilder(q); return; }
+      if(act === "dup"){
+        var copy = JSON.parse(JSON.stringify(q));
+        copy.id = "q" + Date.now() + "-" + Math.floor(Math.random()*100000);
+        copy.customer = (copy.customer || "Customer") + " (copy)"; copy.status = "open"; copy.created = Date.now(); delete copy.demo;
+        state.quotes.unshift(copy); save(); renderSaved(); return;
+      }
+      if(act === "reopen"){ q.status = "open"; save(); renderSaved(); return; }
+      if(act === "print"){ var c = computeQuote(q, state.settings); buildPrint(q, c); window.print(); return; }
+      q.status = act; delete q.demo; save(); renderSaved();
+    });
+  });
+}
+
+/* ---------- settings ---------- */
+function renderSettings(){
+  var s = state.settings;
+  $("sCompany").value = s.company; $("sPhone").value = s.phone; $("sEmail").value = s.email; $("sNotes").value = s.notes;
+  $("sLabor").value = s.labor; $("sEquip").value = s.equip; $("sMile").value = s.mile;
+  $("sShCost").value = s.shCost; $("sSurfCost").value = s.surfCost; $("sFuel").value = s.fuel;
+  $("sOverhead").value = s.overhead; $("sFloor").value = s.floor; $("sTarget").value = s.target;
+  $("sMinJob").value = s.minJob; $("sTankFee").value = s.tankFee; $("sTankHrs").value = s.tankHrs;
+  $("svcSettingsBody").innerHTML = SERVICES.map(function(svc){
+    var cfg = s.services[svc.id] || svc;
+    return "<tr><td>"+esc(svc.name)+"</td><td>"+esc(svc.unit)+"</td>"
+      + '<td><input inputmode="decimal" class="svc-rate" data-id="'+svc.id+'" type="number" min="0" step="0.01" value="'+cfg.rate+'"></td>'
+      + '<td><input inputmode="decimal" class="svc-prod" data-id="'+svc.id+'" type="number" min="1" step="1" value="'+cfg.prod+'"></td>'
+      + '<td><input inputmode="decimal" class="svc-mix" data-id="'+svc.id+'" type="number" min="0" step="0.5" value="'+cfg.mix+'"></td></tr>';
+  }).join("");
+  $("coHeader").textContent = s.company ? (s.company + (s.phone ? " · " + s.phone : "")) : "";
+}
+function saveSettings(){
+  var s = state.settings;
+  s.company = $("sCompany").value; s.phone = $("sPhone").value; s.email = $("sEmail").value; s.notes = $("sNotes").value;
+  s.labor = num($("sLabor").value, 45); s.equip = num($("sEquip").value, 12); s.mile = num($("sMile").value, 0.7);
+  s.shCost = num($("sShCost").value, 4.5); s.surfCost = num($("sSurfCost").value, 0.15); s.fuel = num($("sFuel").value, 18);
+  s.overhead = pct($("sOverhead").value, 10); s.floor = pct($("sFloor").value, 30); s.target = pct($("sTarget").value, 40);
+  if(s.target < s.floor) s.target = s.floor;
+  s.minJob = num($("sMinJob").value, 149); s.tankFee = num($("sTankFee").value, 25); s.tankHrs = num($("sTankHrs").value, 0.5);
+  document.querySelectorAll(".svc-rate").forEach(function(el){ var id = el.getAttribute("data-id"); s.services[id].rate = num(el.value, svcById(id).rate); });
+  document.querySelectorAll(".svc-prod").forEach(function(el){ var id = el.getAttribute("data-id"); var v = num(el.value, svcById(id).prod); s.services[id].prod = v > 0 ? v : svcById(id).prod; });
+  document.querySelectorAll(".svc-mix").forEach(function(el){ var id = el.getAttribute("data-id"); s.services[id].mix = num(el.value, svcById(id).mix); });
+  save(); renderSettings(); recalc();
+  $("settingsMsg").innerHTML = '<span class="good">Settings saved ✓</span> — new quotes use these rates.';
+}
+
+/* ---------- backup ---------- */
+function exportBackup(){
+  var blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "grimemath-backup.json"; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 500);
+  $("backupMsg").textContent = "Backup exported.";
+}
+function importBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var parsed = JSON.parse(reader.result);
+      if(!parsed || !parsed.settings || !Array.isArray(parsed.quotes)) throw new Error("bad shape");
+      var d = defaultSettings();
+      for(var k in d){ if(parsed.settings[k] === undefined) parsed.settings[k] = d[k]; }
+      state = parsed; save(); renderSettings(); renderSaved(); resetQuote();
+      $("backupMsg").innerHTML = '<span class="good">Backup restored ✓</span> ('+state.quotes.length+' quotes).';
+    }catch(e){
+      $("backupMsg").innerHTML = '<span class="bad">That file is not a valid GrimeMath backup — nothing was changed.</span>';
+    }
+  };
+  reader.onerror = function(){ $("backupMsg").innerHTML = '<span class="bad">Could not read that file — nothing was changed.</span>'; };
+  reader.readAsText(file);
+}
+
+/* ---------- init ---------- */
+function init(){
+  load();
+  var tabs = document.querySelectorAll("#tabs button");
+  tabs.forEach(function(b){ b.addEventListener("click", function(){ switchView(this.getAttribute("data-view")); }); });
+  $("addLineBtn").addEventListener("click", function(){
+    markBuilderEdited();
+    var cur = readLines();
+    cur.push({service:"driveway", qty:500, rate: state.settings.services.driveway.rate, condition:"light"});
+    renderLines(cur); recalc();
+  });
+  $("saveQuoteBtn").addEventListener("click", saveQuote);
+  $("resetQuoteBtn").addEventListener("click", resetQuote);
+  $("printBtn").addEventListener("click", function(){
+    var q = readQuoteForm(); q.finalPrice = num($("qFinal").value, 0);
+    buildPrint(q, computeQuote(q, state.settings)); window.print();
+  });
+  ["qCustomer","qAddress","qCrew","qMiles","qFinal","qDate"].forEach(function(id){
+    $(id).addEventListener("input", function(){ markBuilderEdited(); recalc(); }); $(id).addEventListener("change", recalc);
+  });
+  ["qAccess","qStories","qWater"].forEach(function(id){ $(id).addEventListener("change", recalc); });
+  $("saveSettingsBtn").addEventListener("click", saveSettings);
+  $("exportBtn").addEventListener("click", exportBackup);
+  $("importFile").addEventListener("change", function(){ if(this.files && this.files[0]) importBackup(this.files[0]); this.value = ""; });
+  $("clearDemoBtn").addEventListener("click", function(){
+    state.quotes = state.quotes.filter(function(q){ return !q.demo; });
+    save(); renderSaved(); $("backupMsg").textContent = "Demo data cleared.";
+  });
+  $("wipeBtn").addEventListener("click", function(){
+    if(window.confirm("Erase ALL GrimeMath data (settings + every quote) on this device?")){
+      state = { settings: defaultSettings(), quotes: [] }; save(); renderSettings(); resetQuote(); renderSaved();
+      $("backupMsg").textContent = "All data erased.";
+    }
+  });
+  renderSettings();
+  wireMeasures();
+  $("qDate").value = todayStr();
+  $("qNotes").value = state.settings.notes;
+  renderLines([{service:"house", qty:2200, rate: state.settings.services.house.rate, condition:"moderate"},
+               {service:"driveway", qty:800, rate: state.settings.services.driveway.rate, condition:"heavy"}]);
+  recalc();
+}
+if(window.WP){ window.WP.measureRect = measureRect; window.WP.measureHouse = measureHouse; window.WP.measureFence = measureFence; window.WP.applyMeasureToService = applyMeasureToService; window.WP.snapshotForPrint = snapshotForPrint; window.WP.buildPrint = buildPrint; window.WP.loadQuoteIntoBuilder = loadQuoteIntoBuilder; window.WP.getState = function(){ return state; }; }
+document.addEventListener("DOMContentLoaded", init);
+</script>
+
+<!-- ===== White Wolf Digital legal pattern (Terms v1.0) ===== -->
+<style>
+#legalOverlay{position:fixed;inset:0;z-index:99999;background:rgba(10,12,16,.72);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:18px 12px}
+#legalOverlay .legal-box{background:#fff;color:#14181f;max-width:560px;width:100%;border-radius:14px;padding:22px 20px;margin:auto;box-shadow:0 12px 40px rgba(0,0,0,.4);position:relative}
+#legalOverlay h2{margin:0 0 2px;font-size:22px}
+#legalOverlay h3{margin:0 0 12px;font-size:17px}
+#legalOverlay .legal-sum{font-size:16px;line-height:1.55;margin:10px 0}
+#legalOverlay .legal-sum p{margin:4px 0;font-weight:600}
+#legalOverlay .legal-note{background:#fff4d6;border:1px solid #e5c96a;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:14px}
+#legalAgreeBtn{min-height:52px;width:100%;font-size:17px;font-weight:700;margin-top:14px;cursor:pointer}
+#legalAgreeBtn:disabled{opacity:.45;cursor:not-allowed}
+#legalOverlay .legal-check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:15px;line-height:1.45;cursor:pointer;text-align:left}
+#legalOverlay .legal-check input{width:22px;height:22px;min-width:22px;margin:2px 0 0;cursor:pointer}
+#legalOverlay .legal-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#legalOverlay .legal-row button{min-height:48px;flex:1 1 200px;cursor:pointer;font-size:15px}
+#legalFullView{position:absolute;inset:0;background:#fff;border-radius:14px;display:none;flex-direction:column;overflow:hidden}
+#legalFullView .legal-full-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #ddd}
+#legalFullText{overflow:auto;padding:14px 18px;font-size:14.5px;line-height:1.55;text-align:left}
+#legalBackBtn{min-height:48px;min-width:88px;cursor:pointer;font-size:15px;font-weight:700}
+#legalCard{text-align:left;font-size:14.5px;line-height:1.55}
+#legalCard h3{margin:16px 0 6px}
+#legalCard ul{margin:6px 0 6px 18px;padding:0}
+#legalPageBtn{min-height:48px;cursor:pointer;font-size:15px;font-weight:700;width:100%}
+.legal-scrollbox{max-height:46vh;overflow:auto;border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-top:8px}
+</style>
+<script>
+"use strict";
+/* ===== Legal pattern: first-run Terms acceptance + Settings > Legal ===== */
+var TERMS_VERSION = "1.0";
+var LEGAL_APP_NAME = "GrimeMath";
+var LEGAL_KEY = "washpricepro.v1";
+var LEGAL_KEYS = ["washpricepro.v1"];
+var LEGAL_GLOBAL = "state";
+var LEGAL_HAS_DISCLAIMER = true;
+var LEGAL_SETTINGS_SEL = "#view-settings";
+var LEGAL_TERMS_HTML = "<h2>Terms of Use \u2014 White Wolf Digital Apps</h2>\n<p><strong>Version 1.0 (DRAFT \u2014 pending attorney review)</strong> <strong>Seller: White Wolf Tree Service LLC, selling digital products under the name &quot;White Wolf Digital&quot;</strong> <strong>Contact: whitewolfbackoffice@gmail.com</strong></p>\n<h3>1. What you&#x27;re buying</h3>\n<p>Our apps (including ForgeFit AI, ForgeKitchen, TreeBid Pro, SnowBid, GrimeMath, RoofSquares, JobProfit Tracker, PastureLedger, and the other titles sold under White Wolf Digital) are single-file software tools. When you buy one, you are buying a <strong>license to use the file</strong>, not ownership of the software itself.</p>\n<h3>2. Your license</h3>\n<ul>\n<li>You may use the app for your own personal or business work.</li>\n<li>You may open it on your own devices (phone, tablet, computer) and move your own data between them using the app&#x27;s built-in backup/export tools.</li>\n<li>You may <strong>not</strong> resell, redistribute, give away, upload, or share the app file (or a copy of it) with anyone else \u2014 including posting it online, bundling it with other products, or selling access to it.</li>\n<li>You may <strong>not</strong> claim the app as your own work, remove its branding or notices, or use it to build a competing product for resale.</li>\n<li>One purchase = one buyer. A business purchase covers the buyer and their own employees using it for that business&#x27;s work; it does not cover other businesses.</li>\n</ul>\n<h3>3. Your data stays yours \u2014 and stays on your device</h3>\n<ul>\n<li>The current versions of our apps run <strong>entirely on your device</strong>. They have no accounts, no sign-in, no analytics, and they collect, transmit, and store <strong>none</strong> of your information on any server. We never see your data.</li>\n<li>Your records are stored in your browser/app storage on your device. **You are responsible for backing them up** using the app&#x27;s export tools. If you clear your browser data, lose your device, or uninstall the app, your records may be permanently lost, and we cannot recover them \u2014 we never had a copy.</li>\n<li>Files you export (backups, quotes, PDFs) are under your control. Where you store or send them is up to you.</li>\n</ul>\n<h3>4. Estimates are tools, not guarantees</h3>\n<p>Every number our apps produce \u2014 bids, prices, costs, calorie targets, projections, schedules, totals \u2014 is an <strong>estimate generated from the information you enter and the settings you choose</strong>. Outputs are aids for your own judgment, not guarantees of price, profit, outcome, or result. You are responsible for checking any output before relying on it (see also the disclaimer that applies to your app: Health Disclaimer for fitness/nutrition apps, Estimator Disclaimer for contractor tools). If an input is wrong, the output will be wrong.</p>\n<h3>5. Acceptable use</h3>\n<p>Don&#x27;t use the apps to break the law, infringe anyone&#x27;s rights, or misrepresent quotes, invoices, or records to your own customers. For the fitness apps, the guardrails in the app (healthy-rate limits, calorie floor) are part of the product \u2014 don&#x27;t treat the app as a way around them.</p>\n<h3>6. Provided &quot;as is&quot;</h3>\n<p>The apps are provided <strong>&quot;as is&quot; and &quot;as available,&quot; without warranties of any kind</strong>, express or implied \u2014 including merchantability, fitness for a particular purpose, accuracy of calculations, and uninterrupted or error-free operation \u2014 to the maximum extent allowed by law. Software has bugs; browsers change; we work to fix problems but do not promise any app is error-free or will work on every device or browser forever.</p>\n<h3>7. Limitation of liability</h3>\n<p>To the maximum extent allowed by law:</p>\n<ul>\n<li>We are **not liable for indirect, incidental, special, or consequential damages** \u2014 including lost profits, lost or mispriced jobs, lost data, or business interruption \u2014 arising from use of the apps.</li>\n<li>Our total liability for any claim connected to an app is limited to the <strong>amount you paid for that app</strong>.</li>\n<li>Nothing in these terms limits liability that cannot legally be limited.</li>\n</ul>\n<h3>8. Refunds</h3>\n<p>Refunds are handled <strong>by the storefront you bought from, under that storefront&#x27;s policy</strong> \u2014 Gumroad&#x27;s refund policy for Gumroad purchases, and Google Play&#x27;s refund policy for Play purchases. These terms do not add to, replace, or override the storefront&#x27;s refund rules. If a file is defective and won&#x27;t open, contact us at whitewolfbackoffice@gmail.com and we&#x27;ll fix or replace the file.</p>\n<h3>9. Updates and changes to these terms</h3>\n<ul>\n<li>We may release updated versions of an app. Updates may add, change, or remove features.</li>\n<li>We may update these terms. The version you agreed to is recorded in the app (version number and date) at first-run acceptance. If terms change, the app may ask you to accept the new version once on next open. Updated terms apply going forward, not retroactively.</li>\n<li>If you don&#x27;t agree to an updated version of the terms, stop using the app.</li>\n</ul>\n<h3>10. Governing law</h3>\n<p>These terms are governed by the laws of the <strong>State of Oklahoma</strong>, USA. (Attorney to confirm governing law and venue before publication.)</p>\n<h3>11. Contact</h3>\n<p>White Wolf Tree Service LLC (White Wolf Digital) \u2014 whitewolfbackoffice@gmail.com.</p>\n<h3>CONNECTED FEATURES \u2014 takes effect only when these features ship</h3>\n<p><em>The sections below apply only to future connected features (device sync via Health Connect, AI voice logging, and the AI Goal Preview in ForgeFit). They do not apply to the current offline versions, which never transmit data.</em></p>\n<ul>\n<li><strong>Opt-in only.</strong> Connected features are off by default. Each one asks for your separate, explicit consent \u2014 on its own consent screen, in plain language \u2014 before anything leaves your device. Declining never disables the app&#x27;s offline features.</li>\n<li><strong>What gets sent.</strong> Only what the consent screen names, only when you use the feature: for example, a meal description (text, or audio only if cloud transcription is on) for AI voice logging, or the single photo you choose for an AI Goal Preview.</li>\n<li><strong>No retention by us.</strong> Our relay service passes your request to the named AI provider and keeps nothing \u2014 no copies of your photos, audio, transcripts, or entries are stored on our servers. Provider handling is described on the consent screen and in the Privacy Policy.</li>\n<li><strong>Health data stays on the device.</strong> Device sync (Health Connect) reads your health data on your phone and stores it in the app on your phone. It is not uploaded to us.</li>\n<li><strong>Allowances.</strong> Some connected features run on third-party AI services we pay for per use, so they may include a monthly allowance described in the app (for example, a set number of AI previews or voice entries per month), with optional additional credits. Allowances and pricing will be shown in the app before you use the feature; they are not a subscription unless the app says so in plain words.</li>\n<li><strong>Permissions.</strong> Connected features may request device permissions (such as Health Connect access or the microphone) at the moment you first use them. You can revoke permissions any time in your device settings; the related feature will simply stop working.</li>\n</ul>";
+var LEGAL_DISC_HTML = "<h2>Estimator Disclaimer \u2014 Contractor &amp; Trade Tools</h2>\n<p><strong>Applies to: TreeBid Pro, SnowBid, GrimeMath, RoofSquares, JobProfit Tracker, FieldForms Toolkit, PaintPro, FenceDeck, MarketMaker, and the other estimating/pricing tools sold under White Wolf Digital \u2014 including bundles that contain them.</strong></p>\n<h3>Estimating aids, not finished quotes</h3>\n<ul>\n<li>These apps are <strong>estimating and record-keeping aids</strong>. Every bid, price, cost, measurement, and total they produce is an **estimate based on the information and rates you enter**.</li>\n<li>**You \u2014 the business owner \u2014 are responsible for verifying everything before you quote a customer:** measurements and quantities, site conditions, your current material and labor costs, your rates and margins, taxes, permit and license requirements, disposal rules, and any contract terms.</li>\n<li>Default rates, presets, and sample data included in the apps are starting points only. They are not market prices, not industry standards, and not a recommendation of what you should charge.</li>\n<li>A saved quote keeps the prices in effect when you created it (price snapshot). Changing your presets later does not change saved quotes \u2014 and a saved quote is still your responsibility to review before sending.</li>\n</ul>\n<h3>Specific tools</h3>\n<ul>\n<li><strong>TreeBid Pro:</strong> tree work is dangerous and site-specific. Difficulty factors and presets cannot see the actual tree, lean, rot, targets, or access. Inspect every job in person before final pricing. The &quot;Invoice with Wave&quot; feature is an open-and-paste handoff \u2014 TreeBid does not connect to Wave, and the invoice you send from Wave is yours.</li>\n<li><strong>RoofSquares / measurement tools:</strong> confirm roof measurements and pitch in person or by your usual method before ordering materials.</li>\n<li><strong>SnowBid / seasonal tools:</strong> route times, snowfall amounts, and service pricing vary by storm and site; seasonal contracts are your agreement with your customer, on your terms.</li>\n<li><strong>JobProfit Tracker:</strong> profit figures depend on the costs you enter. The app is not accounting or tax software and does not replace your bookkeeper or accountant.</li>\n</ul>\n<h3>Bottom line</h3>\n<p>If an output and your judgment disagree, trust your judgment \u2014 then fix the input. We are not responsible for jobs won, lost, or mispriced based on app outputs, within the limits of the Terms of Use.</p>";
+var LEGAL_PRIVACY_HTML = "<h3>Privacy</h3><p>This app has no accounts and no sign-in. It collects no data, runs no analytics, and sends nothing anywhere &mdash; everything you enter is stored only on this device, in this browser/app storage. We never see your data. You are responsible for backing up your records with the app&rsquo;s export tools; files you export are under your control.</p>";
+var __legalRecord = null;
+var __legalOrigSet = localStorage.setItem.bind(localStorage);
+function __legalReadStored(){
+  try { var raw = localStorage.getItem(LEGAL_KEY); if(!raw) return null; var p = JSON.parse(raw); return (p && typeof p === "object") ? p : null; } catch(e){ return null; }
+}
+function __legalAdopt(rec){ if(rec && rec.termsVersion){ __legalRecord = { termsVersion: String(rec.termsVersion), acceptedDate: rec.acceptedDate || "", disclaimerShown: !!rec.disclaimerShown }; } }
+(function(){
+  var stored = __legalReadStored();
+  if (stored && stored.legal) __legalAdopt(stored.legal);
+})();
+/* Keep the acceptance inside the app's own saved state: adopt any legal record the app writes,
+   and re-attach the known record when an app save would otherwise drop it. */
+localStorage.setItem = function(k, v){
+  if (LEGAL_KEYS.indexOf(k) >= 0 && typeof v === "string"){
+    try {
+      var p = JSON.parse(v);
+      if (p && typeof p === "object" && !Array.isArray(p)){
+        if (p.legal) __legalAdopt(p.legal);
+        else if (__legalRecord && k === LEGAL_KEY){ p.legal = __legalRecord; v = JSON.stringify(p); }
+      }
+    } catch(e){}
+  }
+  return __legalOrigSet(k, v);
+};
+function __legalVersionOlder(a, b){
+  var pa = String(a||"0").split("."), pb = String(b||"0").split(".");
+  for (var i = 0; i < Math.max(pa.length, pb.length); i++){ var x = parseInt(pa[i]||"0",10)||0, y = parseInt(pb[i]||"0",10)||0; if (x < y) return true; if (x > y) return false; }
+  return false;
+}
+function __legalAcceptLine(){
+  if (__legalRecord && __legalRecord.acceptedDate) return "You agreed to Terms v" + __legalRecord.termsVersion + " on " + __legalRecord.acceptedDate + ".";
+  return "Terms acceptance not yet recorded.";
+}
+function __legalRenderAcceptLine(){
+  var el = document.getElementById("legalAcceptLine");
+  if (el) el.textContent = __legalAcceptLine();
+}
+function __legalBuildPage(){
+  var sec = document.querySelector(LEGAL_SETTINGS_SEL);
+  if (!sec || document.getElementById("legalCard")) return;
+  var wrap = document.createElement("div");
+  wrap.className = "card";
+  wrap.style.marginTop = "14px";
+  var discSection = LEGAL_HAS_DISCLAIMER ? '<h3>Estimator Disclaimer</h3><div class="legal-scrollbox">' + LEGAL_DISC_HTML + "</div>" : "";
+  wrap.innerHTML = '<h2>Legal</h2>'
+    + '<p><button type="button" id="legalPageBtn">Legal &mdash; Terms, ' + (LEGAL_HAS_DISCLAIMER ? "Disclaimer" : "") + ' &amp; Privacy</button></p>'
+    + '<div id="legalCard" style="display:none">'
+    + '<p id="legalAcceptLine"></p>'
+    + "<h3>Terms of Use</h3>" + '<div class="legal-scrollbox">' + LEGAL_TERMS_HTML + "</div>"
+    + discSection
+    + LEGAL_PRIVACY_HTML
+    + '<p><strong>Sold by:</strong> White Wolf Tree Service LLC (White Wolf Digital) &mdash; whitewolfbackoffice@gmail.com</p>'
+    + "</div>";
+  sec.appendChild(wrap);
+  document.getElementById("legalPageBtn").addEventListener("click", function(){
+    var card = document.getElementById("legalCard");
+    card.style.display = (card.style.display === "none") ? "block" : "none";
+    __legalRenderAcceptLine();
+    if (card.style.display === "block"){ try { card.scrollIntoView({block:"start"}); } catch(e){} }
+  });
+  __legalRenderAcceptLine();
+}
+function __legalShowFull(kind){
+  var fv = document.getElementById("legalFullView");
+  var ft = document.getElementById("legalFullText");
+  var fh = document.getElementById("legalFullTitle");
+  if (!fv || !ft) return;
+  if (kind === "disclaimer"){ ft.innerHTML = LEGAL_DISC_HTML; if (fh) fh.textContent = "Estimator Disclaimer"; }
+  else { ft.innerHTML = LEGAL_TERMS_HTML; if (fh) fh.textContent = "Terms of Use"; }
+  fv.style.display = "flex";
+  ft.scrollTop = 0;
+}
+function __legalMaybePrompt(){
+  var stored = __legalReadStored();
+  var rec = stored && stored.legal ? stored.legal : null;
+  if (rec) __legalAdopt(rec);
+  var need = false, updated = false;
+  if (!rec) need = true;
+  else if (__legalVersionOlder(rec.termsVersion, TERMS_VERSION)){ need = true; updated = true; }
+  var ov = document.getElementById("legalOverlay");
+  if (!ov) return;
+  if (need){
+    var note = document.getElementById("legalUpdatedNote");
+    if (note) note.style.display = updated ? "block" : "none";
+    var chk0 = document.getElementById("legalAgreeCheck");
+    var ab0 = document.getElementById("legalAgreeBtn");
+    if (chk0) chk0.checked = false;
+    if (ab0) ab0.disabled = true;
+    ov.style.display = "flex";
+  } else {
+    ov.style.display = "none";
+  }
+  __legalRenderAcceptLine();
+}
+function __legalAgree(){
+  var chkA = document.getElementById("legalAgreeCheck");
+  if (chkA && !chkA.checked) return;
+  var d = new Date();
+  var iso = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  __legalRecord = { termsVersion: TERMS_VERSION, acceptedDate: iso, disclaimerShown: LEGAL_HAS_DISCLAIMER };
+  try { var g = window[LEGAL_GLOBAL]; if (g && typeof g === "object") g.legal = __legalRecord; } catch(e){}
+  try {
+    var stored = __legalReadStored();
+    if (stored){ stored.legal = __legalRecord; __legalOrigSet(LEGAL_KEY, JSON.stringify(stored)); }
+    else { var g2 = window[LEGAL_GLOBAL]; if (g2 && typeof g2 === "object") __legalOrigSet(LEGAL_KEY, JSON.stringify(g2)); }
+  } catch(e){}
+  var ov = document.getElementById("legalOverlay");
+  if (ov) ov.style.display = "none";
+  __legalRenderAcceptLine();
+}
+function __legalBuildOverlay(){
+  if (document.getElementById("legalOverlay")) return;
+  var ov = document.createElement("div");
+  ov.id = "legalOverlay";
+  ov.style.display = "none";
+  var discBtn = LEGAL_HAS_DISCLAIMER ? '<button type="button" id="legalDisclaimerBtn">Read the Estimator Disclaimer</button>' : "";
+  var followLine = LEGAL_HAS_DISCLAIMER
+    ? "The full Terms and Disclaimer are one tap away, now and any time in Settings &rarr; Legal."
+    : "The full Terms are one tap away, now and any time in Settings &rarr; Legal.";
+  var checkLabel = LEGAL_HAS_DISCLAIMER
+    ? "I have read the disclaimer and I agree to the Terms of Use"
+    : "I have read and I agree to the Terms of Use";
+  ov.innerHTML = '<div class="legal-box" role="dialog" aria-modal="true" aria-label="Terms of Use">'
+    + "<h2>" + LEGAL_APP_NAME + "</h2><h3>Terms of Use</h3>"
+    + '<div class="legal-note" id="legalUpdatedNote" style="display:none">Our terms were updated (v' + TERMS_VERSION + ").</div>"
+    + '<div class="legal-sum"><p>Your data stays on your device.</p>'
+    + "<p>Estimates are aids, not guarantees.</p>"
+    + "<p>You're responsible for checking outputs before you rely on them.</p></div>"
+    + "<p>" + followLine + "</p>"
+    + '<div class="legal-row"><button type="button" id="legalTermsBtn">Read the full Terms</button>' + discBtn + "</div>"
+    + '<label class="legal-check"><input type="checkbox" id="legalAgreeCheck"> <span>' + checkLabel + '</span></label>'
+    + '<button type="button" id="legalAgreeBtn" disabled>I Agree</button>'
+    + '<div id="legalFullView"><div class="legal-full-head"><button type="button" id="legalBackBtn">&larr; Back</button><strong id="legalFullTitle">Terms of Use</strong></div><div id="legalFullText"></div></div>'
+    + "</div>";
+  document.body.appendChild(ov);
+  document.getElementById("legalAgreeBtn").addEventListener("click", __legalAgree);
+  var agreeChk = document.getElementById("legalAgreeCheck");
+  var agreeBtn = document.getElementById("legalAgreeBtn");
+  if (agreeChk && agreeBtn) agreeChk.addEventListener("change", function(){ agreeBtn.disabled = !agreeChk.checked; });
+  document.getElementById("legalTermsBtn").addEventListener("click", function(){ __legalShowFull("terms"); });
+  var db = document.getElementById("legalDisclaimerBtn");
+  if (db) db.addEventListener("click", function(){ __legalShowFull("disclaimer"); });
+  document.getElementById("legalBackBtn").addEventListener("click", function(){ document.getElementById("legalFullView").style.display = "none"; });
+}
+__legalBuildOverlay();
+__legalBuildPage();
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ __legalBuildOverlay(); __legalBuildPage(); __legalMaybePrompt(); });
+else __legalMaybePrompt();
+</script>
+
+<script>
+/* ============================================================================
+   SHARED VOICE DICTATION LAYER — "vv" snippet v1.0 (2026-10-29)
+   Governing standard: QA-STANDARD.md §9a (mic dictation on every data-entry
+   field). Built once, dropped into every catalog app verbatim. Do not fork
+   per app — fix here and re-drop.
+
+   What it does:
+   - Adds a >=48px mic button beside every text input, number input, and
+     textarea (an <input> with no type attribute counts as text). Selects,
+     checkboxes, radios, file/date/tel/email inputs are NOT wired — they keep
+     their native pickers/keyboards (per voice-retrofit-plan.md counting).
+   - Tap the mic -> Web Speech API dictation into that field, exactly as if
+     typed. Interim words show live in the field; nothing auto-submits.
+   - Number fields: spoken numbers are converted ("sixty five" -> 65,
+     "two point five" -> 2.5, "1,200" -> 1200). If the words can't be read as
+     a number, the field is left untouched and the user is told plainly.
+   - After a successful dictation the field receives real bubbling "input"
+     and "change" events, so the host app's own handlers fire exactly as if
+     the user typed.
+   - Fields added later (re-renders, add-row buttons) are wired automatically
+     via MutationObserver.
+   - No SpeechRecognition (Firefox, file:// copies in most browsers, denied
+     permission): the mic shows the honest note "Voice isn't available on
+     this device/browser — typing works as always" and typing is never
+     blocked, hidden, or degraded.
+   - Failed/empty recognition announces "Didn't catch that — try again or
+     type it" and restores the field's previous value.
+
+   Wiring (see README.md in this folder): paste this whole IIFE in a <script>
+   block just before </body>. It injects its own styles (#vv-style) — no
+   other changes needed. It never touches storage, prices, or app state.
+   ============================================================================ */
+(function () {
+  "use strict";
+  if (window.__vvDictation) return; // drop-in twice = wire once
+  window.__vvDictation = "1.0";
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  var FALLBACK_MSG = "Voice isn't available on this device/browser — typing works as always";
+  var MISSED_MSG = "Didn't catch that — try again or type it";
+  var BLOCKED_MSG = "Microphone is blocked — typing works as always. Check the browser's mic permission if you want voice.";
+
+  /* ---- styles (self-injected; dictation-snippet.css holds the same rules) ---- */
+  var CSS = [
+    ".vv-wrap{display:flex;gap:6px;align-items:flex-start}",
+    ".vv-wrap>input,.vv-wrap>textarea{flex:1 1 0;min-width:0}",
+    ".vv-mic{flex:0 0 auto;width:48px;min-width:48px;height:48px;border-radius:8px;border:1px solid #b9c2ba;background:#fff;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent}",
+    ".vv-mic:active{transform:scale(.96)}",
+    ".vv-mic.vv-live{background:#b3372e;border-color:#b3372e;animation:vvpulse 1s ease-in-out infinite}",
+    "@keyframes vvpulse{0%,100%{opacity:1}50%{opacity:.5}}",
+    ".vv-status{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);max-width:min(92vw,480px);background:#1c2420;color:#fff;padding:10px 14px;border-radius:9px;font-size:14px;line-height:1.35;z-index:99999;box-shadow:0 4px 18px rgba(0,0,0,.25);display:none;text-align:center;pointer-events:none}",
+    ".vv-status.vv-show{display:block}",
+    "@media print{.vv-mic{display:none!important}.vv-status{display:none!important}}"
+  ].join("\n");
+  if (!document.getElementById("vv-style")) {
+    var st = document.createElement("style");
+    st.id = "vv-style"; st.textContent = CSS;
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  /* ---- status announcements ---- */
+  var statusEl = null, statusTimer = null;
+  function say(msg, ms) {
+    if (!statusEl) {
+      statusEl = document.createElement("div");
+      statusEl.className = "vv-status"; statusEl.setAttribute("role", "status");
+      statusEl.setAttribute("aria-live", "polite");
+      document.body.appendChild(statusEl);
+    }
+    statusEl.textContent = msg;
+    statusEl.classList.add("vv-show");
+    if (statusTimer) clearTimeout(statusTimer);
+    statusTimer = setTimeout(function () { statusEl.classList.remove("vv-show"); }, ms || 5000);
+  }
+
+  /* ---- spoken-number conversion ---- */
+  var ONES = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19 };
+  var TENS = { twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+  function wordsToNumber(s) {
+    var words = s.split(/[\s-]+/), total = 0, current = 0, seen = false, decimal = null, decPlace = 0.1, neg = false;
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      if (!w || w === "and") continue;
+      if (w === "minus" || w === "negative") { neg = true; continue; }
+      if (w === "point") { decimal = true; continue; }
+      if (decimal) {
+        if (ONES.hasOwnProperty(w) && ONES[w] < 10) { if (decimal === true) decimal = 0; decimal += ONES[w] * decPlace; decPlace /= 10; seen = true; }
+        continue;
+      }
+      if (ONES.hasOwnProperty(w)) { current += ONES[w]; seen = true; }
+      else if (TENS.hasOwnProperty(w)) { current += TENS[w]; seen = true; }
+      else if (w === "hundred") { current = (current || 1) * 100; seen = true; }
+      else if (w === "thousand") { total += (current || 1) * 1000; current = 0; seen = true; }
+      else if (w === "million") { total += (current || 1) * 1000000; current = 0; seen = true; }
+      else if (w === "a" || w === "an") { /* filler before hundred/thousand */ }
+      /* any other word (dollars, feet, hours…) is ignored filler */
+    }
+    if (!seen) return null;
+    var n = total + current + (decimal ? decimal : 0);
+    return neg ? -n : n;
+  }
+  function parseSpokenNumber(raw) {
+    if (!raw) return null;
+    var s = String(raw).toLowerCase().replace(/\$/g, " ").replace(/\s+/g, " ").trim();
+    s = s.replace(/(\d),(?=\d)/g, "$1").replace(/,/g, " "); // 1,200 -> 1200
+    var m = s.match(/-?\d+(?:\.\d+)?/);
+    if (m) { var n = parseFloat(m[0]); if (isFinite(n)) return n; }
+    return wordsToNumber(s);
+  }
+
+  /* ---- field helpers ---- */
+  function isWirable(f) {
+    if (!f || f.dataset.vvWired) return false;
+    if (f.tagName === "TEXTAREA") return !(f.disabled || f.readOnly);
+    if (f.tagName !== "INPUT") return false;
+    var t = (f.getAttribute("type") || "text").toLowerCase();
+    if (t !== "text" && t !== "number") return false;
+    return !(f.disabled || f.readOnly);
+  }
+  function labelFor(f) {
+    var name = "";
+    if (f.id) {
+      var lab = document.querySelector('label[for="' + f.id + '"]');
+      if (lab) name = lab.textContent;
+    }
+    if (!name) {
+      var prev = f.closest ? f.closest("div") : null;
+      var l2 = prev ? prev.querySelector("label") : null;
+      if (l2) name = l2.textContent;
+    }
+    if (!name) name = f.getAttribute("placeholder") || f.getAttribute("name") || "field";
+    return String(name).replace(/\s+/g, " ").trim().slice(0, 60) || "field";
+  }
+  function fireEvents(f) {
+    ["input", "change"].forEach(function (type) {
+      var ev;
+      try { ev = new Event(type, { bubbles: true, composed: true }); }
+      catch (e) { ev = document.createEvent("Event"); ev.initEvent(type, true, true); }
+      f.dispatchEvent(ev);
+    });
+  }
+  function joinText(base, add) {
+    if (!base) return add;
+    if (!add) return base;
+    return base + (/\s$/.test(base) ? "" : " ") + add;
+  }
+
+  /* ---- dictation session ---- */
+  var active = null; // { rec, field, btn, base, finalText, gotResult, done }
+  function stopActive() { if (active && active.rec) { try { active.rec.stop(); } catch (e) {} } }
+  function startDictation(field, btn) {
+    if (active && active.field === field) { stopActive(); return; } // tap again = stop
+    if (active) stopActive();
+    if (!SR) { say(FALLBACK_MSG, 6000); return; }
+    var rec;
+    try { rec = new SR(); } catch (e) { say(FALLBACK_MSG, 6000); return; }
+    var session = { rec: rec, field: field, btn: btn, base: field.value || "", finalText: "", gotResult: false, done: false };
+    active = session;
+    rec.lang = (document.documentElement.getAttribute("lang") || "en-US");
+    rec.interimResults = true;
+    rec.continuous = false;
+    rec.maxAlternatives = 1;
+    btn.classList.add("vv-live");
+    btn.setAttribute("aria-label", "Listening — tap to stop");
+    say("Listening… speak now.");
+    rec.onresult = function (ev) {
+      var interim = "", finalT = "";
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var r = ev.results[i];
+        if (r.isFinal) finalT += r[0].transcript; else interim += r[0].transcript;
+      }
+      if (finalT) { session.finalText = joinText(session.finalText, finalT.trim()); session.gotResult = true; }
+      var shown = joinText(session.finalText, interim.trim());
+      if (field.type !== "number") field.value = joinText(session.base, shown);
+      else if (shown) field.value = shown; // numbers: show the words until they resolve on end
+    };
+    rec.onerror = function (ev) {
+      if (session.done) return;
+      session.done = true;
+      field.value = session.base;
+      cleanup(session);
+      if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) say(BLOCKED_MSG, 6500);
+      else if (ev && ev.error === "not-supported") say(FALLBACK_MSG, 6000);
+      else say(MISSED_MSG, 5000);
+    };
+    rec.onend = function () {
+      if (session.done) return;
+      session.done = true;
+      cleanup(session);
+      var heard = (session.finalText || "").trim();
+      if (!heard) { field.value = session.base; say(MISSED_MSG, 5000); return; }
+      if (field.type === "number") {
+        var n = parseSpokenNumber(heard);
+        if (n === null || !isFinite(n)) { field.value = session.base; say(MISSED_MSG, 5000); return; }
+        field.value = String(n);
+      } else {
+        field.value = joinText(session.base, heard);
+      }
+      fireEvents(field);
+      try { field.focus({ preventScroll: false }); } catch (e) {}
+      say("Added: " + heard, 3000);
+    };
+    try { rec.start(); } catch (e) { session.done = true; cleanup(session); field.value = session.base; say(MISSED_MSG, 5000); }
+  }
+  function cleanup(session) {
+    if (active === session) active = null;
+    if (session.btn) { session.btn.classList.remove("vv-live"); session.btn.setAttribute("aria-label", session.btn.dataset.vvLabel || "Voice entry"); }
+  }
+
+  /* ---- wiring ---- */
+  function wireField(f) {
+    if (!isWirable(f)) return;
+    f.dataset.vvWired = "1";
+    var wrap = document.createElement("span");
+    wrap.className = "vv-wrap";
+    f.parentNode.insertBefore(wrap, f);
+    wrap.appendChild(f);
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "vv-mic";
+    btn.innerHTML = "🎤";
+    var lab = "Voice entry for " + labelFor(f);
+    btn.dataset.vvLabel = lab;
+    btn.setAttribute("aria-label", lab);
+    btn.title = "Voice entry";
+    btn.addEventListener("click", function () { startDictation(f, btn); });
+    wrap.appendChild(btn);
+  }
+  function scan(root) {
+    if (!root || !root.querySelectorAll) return;
+    var fields = root.querySelectorAll("input, textarea");
+    for (var i = 0; i < fields.length; i++) wireField(fields[i]);
+    if (root.tagName && (root.tagName === "INPUT" || root.tagName === "TEXTAREA")) wireField(root);
+  }
+
+  function init() {
+    scan(document);
+    if (window.MutationObserver && document.body) {
+      var pending = false;
+      var obs = new MutationObserver(function (muts) {
+        var hasAdds = false;
+        for (var i = 0; i < muts.length; i++) if (muts[i].addedNodes.length) { hasAdds = true; break; }
+        if (!hasAdds || pending) return;
+        pending = true;
+        setTimeout(function () { pending = false; scan(document); }, 60);
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+
+  /* exposed for QA harnesses and future Tell flows */
+  window.__vv = { version: "1.0", supported: !!SR, parseSpokenNumber: parseSpokenNumber, fallbackMessage: FALLBACK_MSG, missedMessage: MISSED_MSG };
+})();
+</script>
+</body>
+</html>
