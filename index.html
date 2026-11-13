@@ -80,17 +80,22 @@ summary{cursor:pointer;font-weight:700;font-size:15px}
 </head>
 <body>
 <header>
-  <h1>💦 GrimeMath</h1>
-  <div class="sub">Pressure washing quote calculator with a profit floor — price every job from real costs, not guesses.</div>
-  <div class="co" id="coHeader"></div>
+  <div class="brandrow">
+    <div class="mark">💦</div>
+    <div class="brandtext">
+      <h1>GrimeMath</h1>
+      <div class="sub">Pressure washing quote calculator with a profit floor — price every job from real costs, not guesses.</div>
+      <div class="co" id="coHeader"></div>
+    </div>
+  </div>
 </header>
 <div style="text-align:center;padding:12px 16px;background:#fff8e6;border-bottom:2px solid #e8a13a;"><a href="https://travisbriggs.gumroad.com/l/gkxdcl" target="_blank" rel="noopener" style="display:inline-block;background:#e8a13a;color:#1d2b2e;font-weight:800;font-size:17px;padding:10px 22px;border-radius:8px;text-decoration:none;">Get the full version — $59</a></div>
 
 <nav id="tabs">
-  <button data-view="quote" class="active">New Quote</button>
-  <button data-view="saved">Saved Quotes</button>
-  <button data-view="settings">Settings &amp; Rates</button>
-  <button data-view="help">Help</button>
+  <button data-view="quote" class="active"><span class="ic">🧾</span><span class="lb">New Quote</span></button>
+  <button data-view="saved"><span class="ic">💾</span><span class="lb">Saved Quotes</span></button>
+  <button data-view="settings"><span class="ic">⚙️</span><span class="lb">Settings &amp; Rates</span></button>
+  <button data-view="help"><span class="ic">❓</span><span class="lb">Help</span></button>
 </nav>
 <main>
 
@@ -279,8 +284,8 @@ summary{cursor:pointer;font-weight:700;font-size:15px}
     <p><strong>Voice entry:</strong> tap the microphone button beside any text or number field and say the value — for a number field, say it in words ("twenty by forty" won't fit one field, so say "twenty" in the length field and "forty" in the width field, or "eight hundred" for a quantity). The words land in the field as if typed; nothing is saved or sent until you tap the usual buttons. Where voice isn't available on your device or browser, the microphone shows a short note and typing works as always.</p>
   </details>
   <details><summary>Stuck? Email us</summary>
-    <p><strong>GrimeMath v1.1.3</strong></p>
-    <p>Questions or trouble? <a class="btn" id="helpEmailBtn" style="display:inline-block; min-height:48px; padding:12px 20px; box-sizing:border-box; text-decoration:none;" href="mailto:whitewolfbackoffice@gmail.com?subject=GrimeMath%20help%20%E2%80%94%20v1.1.3&amp;body=Tell%20us%20what%20you%20were%20trying%20to%20do%20and%20what%20happened%3A%0A%0A">✉️ Email us</a></p>
+    <p><strong>GrimeMath v1.2.0</strong></p>
+    <p>Questions or trouble? <a class="btn" id="helpEmailBtn" style="display:inline-block; min-height:48px; padding:12px 20px; box-sizing:border-box; text-decoration:none;" href="mailto:whitewolfbackoffice@gmail.com?subject=GrimeMath%20help%20%E2%80%94%20v1.2.0&amp;body=Tell%20us%20what%20you%20were%20trying%20to%20do%20and%20what%20happened%3A%0A%0A">✉️ Email us</a></p>
     <p>Tell us what you were trying to do and what happened — we read every message. Your data lives only in this browser on this device, and we never see it; use Export backup in Saved Quotes before switching devices, so a lost phone never means lost quotes.</p>
   </details>
 </section>
@@ -896,6 +901,43 @@ document.addEventListener("DOMContentLoaded", init);
 #legalCard ul{margin:6px 0 6px 18px;padding:0}
 #legalPageBtn{min-height:48px;cursor:pointer;font-size:15px;font-weight:700;width:100%}
 .legal-scrollbox{max-height:46vh;overflow:auto;border:1px solid #ddd;border-radius:8px;padding:10px 14px;margin-top:8px}
+</style>
+<style id="gmRedesign">
+/* ===== GrimeMath v1.2.0 — modern app look (catalog redesign wave 3, presentation only) ===== */
+:root{--radius:16px;--bar-h:64px;--shadow:0 2px 6px rgba(0,0,0,.35),0 12px 28px rgba(0,0,0,.3)}
+body{padding-bottom:calc(var(--bar-h) + env(safe-area-inset-bottom) + 20px)}
+header{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,#08161d,#0e2a38 55%,#155e75);box-shadow:0 2px 12px rgba(0,0,0,.45)}
+.brandrow{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.mark{flex:0 0 auto;width:50px;height:50px;border-radius:15px;background:linear-gradient(145deg,#7fe3f5,var(--acc) 55%,#1a7f99);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(0,0,0,.4)}
+.brandtext{min-width:0}
+header h1{font-size:23px;line-height:1.1}
+#tabs{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:60;background:rgba(16,32,42,.97);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -3px 16px rgba(0,0,0,.45);padding:6px 8px calc(6px + env(safe-area-inset-bottom));flex-wrap:nowrap;gap:2px}
+#tabs button{flex:1;background:none;border:none;color:var(--muted);padding:4px 2px 5px;border-radius:14px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-weight:700;font-size:11.5px}
+#tabs button:hover{background:rgba(47,185,216,.08)}
+#tabs button .ic{font-size:21px;line-height:1.15;padding:3px 14px;border-radius:999px;transition:background .15s}
+#tabs button .lb{font-size:11.5px;letter-spacing:.2px}
+#tabs button.active{background:none;color:#7fe3f5}
+#tabs button.active .ic{background:var(--acc);box-shadow:0 2px 6px rgba(47,185,216,.5)}
+section.view.active{animation:gmTabIn .28s ease both}
+@keyframes gmTabIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{box-shadow:var(--shadow)}
+.btn{border-radius:999px;min-height:48px;padding:11px 18px}
+.btn.small{border-radius:999px;min-height:40px}
+input,select{border-radius:12px;min-height:48px;padding:10px 12px}
+textarea{border-radius:12px;padding:10px 12px}
+.kpi .k{border-radius:14px}
+.line-row{border-radius:14px}
+#legalOverlay .legal-box{border-radius:22px;padding:26px 20px 22px}
+#legalOverlay .legal-box::before{content:"💦";display:flex;align-items:center;justify-content:center;width:76px;height:76px;margin:0 auto 12px;border-radius:22px;background:linear-gradient(145deg,#7fe3f5,#2fb9d8 55%,#1a7f99);font-size:40px;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 10px rgba(0,0,0,.25)}
+#legalOverlay h2{text-align:center}
+#legalOverlay h3{text-align:center}
+#legalOverlay h2::after{content:"Welcome to GrimeMath — price every wash job from real costs, with a profit floor under every quote.";display:block;text-align:center;font-weight:400;color:#5a6675;font-size:15px;margin-top:8px;line-height:1.45}
+#legalAgreeBtn{border-radius:999px;min-height:56px;font-size:17.5px;background:linear-gradient(145deg,#57d977,#2fb9d8);color:#06222e;border:none}
+#legalOverlay .legal-row button{border-radius:999px;border:1px solid #9db2c3;background:#eef4f8;color:#17202a}
+#legalBackBtn{border-radius:999px}
+#legalFullView{border-radius:22px}
+.legal-scrollbox{border-radius:12px}
+@media print{body{padding-bottom:0}}
 </style>
 <script>
 "use strict";
